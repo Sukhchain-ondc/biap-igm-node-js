@@ -49,7 +49,8 @@ class HttpRequest {
       };
 
       let result;
-
+      console.log("JSON.stringify(this.data) ============= ", JSON.stringify(this.data));
+      
       if (this.method.toLowerCase() == "get") {
         result = await axios({
           baseURL: this.baseUrl,
@@ -74,13 +75,16 @@ class HttpRequest {
     } catch (err: any) {
       if (err.response) {
         // The client was given an error response (5xx, 4xx)
-        logger.info("Error response", err, "\n", err.response);
+        console.log("Error response =============", err?.response?.data);
+        logger.info("Error response =============", err?.response?.data);
       } else if (err.request) {
         // The client never received a response, and the request was never left
-        logger.info("Error request", err, "\n", err.request);
+        console.log("Error request nishtha ===========", err.request);
+        logger.info("Error request nishtha ===========", err.request);
       } else {
         // Anything else
-        logger.info("Error message", err, "\n", err.message);
+        console.log("Error message =============", err?.message);
+        logger.info("Error message", err.message);
       }
 
       throw err;

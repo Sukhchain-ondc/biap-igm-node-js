@@ -59,6 +59,7 @@ class IssueStatusService {
    */
   async onIssueStatus(messageId: Object) {
     try {
+	console.log("messageId",messageId)
       const protocolSupportResponse = await onIssue_status(messageId);
       if (protocolSupportResponse && protocolSupportResponse.length) {
         const respondent_actions =

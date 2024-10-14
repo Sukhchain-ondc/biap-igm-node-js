@@ -5,7 +5,8 @@ import BppIssueService from "./bpp.issue.service";
 import Issue from "../../database/issue.model";
 import { logger } from "../../shared/logger";
 import getSignedUrlForUpload from "../../utils/s3Util";
-
+import fs from 'fs';
+import path from 'path';
 import {
   IParamProps,
   IssueProps,
@@ -37,23 +38,31 @@ class IssueService {
       },
     };
   }
-  async uploadImage(base64: string) {
+  async uploadImageOld(base64: string) {
     try {
-      let matches: string[] | any = base64.match(
-        /^data:([A-Za-z-+/]+);base64,(.+)$/
-      );
+      // let matches: string[] | any = base64.match(
+      //   /^data:([A-Za-z-+/]+);base64,(.+)$/
+      // );
       // response: IResponseProps = {
       //   type: "",
       //   data: new Buffer(matches[1], "base64"),
       // };
 
-      if (matches.length !== 3) {
+      // if (matches.length !== 3) {
+      //   throw new Error("Invalid input string");
+      // }
+      const cleanedBase64 = base64.replace(/\s+/g, '');
+      
+      console.log("===================--------------------------",cleanedBase64,"======base64------------")
+      const matches = cleanedBase64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+      if (!matches || matches.length !== 3) {
         throw new Error("Invalid input string");
       }
-
+      console.log(base64,"======base64------------")
       const b64toBlob = (b64Data: any, contentType = "", sliceSize = 512) => {
         const byteCharacters = atob(b64Data);
         const byteArrays = [];
+        console.log(b64toBlob,"======b64toBlob------------")
 
         for (
           let offset = 0;
@@ -91,6 +100,97 @@ class IssueService {
       return err;
     }
   }
+
+  async uploadImageS3(base64: string) {
+    try {
+        // Remove any whitespace from the base64 string
+        const cleanedBase64 = base64.replace(/\s+/g, '');
+        console.log("===================--------------------------", cleanedBase64, "======base64------------");
+
+        // Match against the base64 data URL format
+        const matches = cleanedBase64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+        if (!matches || matches.length !== 3) {
+            throw new Error("Invalid input string");
+        }
+        
+        const contentType = matches[1];
+        // const base64Data = matches[2];
+
+        // Convert base64 string to a binary Blob
+        // const b64toBlob = (b64Data: string, contentType: string) => {
+        //     const byteCharacters = atob(b64Data);
+        //     const byteNumbers = new Uint8Array(byteCharacters.length);
+        //     for (let i = 0; i < byteCharacters.length; i++) {
+        //         byteNumbers[i] = byteCharacters.charCodeAt(i);
+        //     }
+        //     return new Blob([byteNumbers], { type: contentType });
+        // };
+
+        // const blob = b64toBlob(base64Data, contentType);
+
+        // Get signed URL for upload
+        const resp = await getSignedUrlForUpload({
+            path: uuidv4(),
+            filetype: contentType.split('/')[1], // Extract file type from content type
+        });
+        console.log(resp,"===========resp========")
+        // const uploadResponse = await fetch(resp?.urls, {
+        //     method: "PUT",
+        //     headers: { "Content-Type": contentType },
+        //     body: blob,
+        // });
+
+        // // Check if the upload was successful
+        // if (!uploadResponse.ok) {
+        //     throw new Error(`Upload failed: ${uploadResponse.statusText}`);
+        // }
+
+        return resp?.publicUrl; // Return the public URL of the uploaded image
+    } catch (err) {
+        console.error("Error uploading image:", err);
+        throw err; // Re-throw the error for handling upstream
+    }
+}
+
+  async uploadImage(base64: string) {
+    try {
+        const cleanedBase64 = base64.replace(/\s+/g, '');
+        console.log("===================--------------------------", cleanedBase64, "======base64------------");
+
+        const matches = cleanedBase64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+        if (!matches || matches.length !== 3) {
+            throw new Error("Invalid input string");
+        }
+        
+        const contentType = matches[1];
+        const base64Data = matches[2];
+
+        const buffer = Buffer.from(base64Data, 'base64');
+        console.log(buffer,"buffer")
+        const directoryPath = '/app/images';
+
+        const fileExtension = contentType.split('/')[1];
+        const fileName = `${uuidv4()}.${fileExtension}`;
+        const filePath = path.join(directoryPath, fileName);
+        console.log(filePath,"filePath")
+
+        if (!fs.existsSync(directoryPath)) {
+            fs.mkdirSync(directoryPath, { recursive: true });
+        }
+
+        fs.writeFileSync(filePath, buffer);
+
+        const publicUrl = `/images/${fileName}`;
+        console.log("Image saved at:", publicUrl);
+
+        return publicUrl;
+    } catch (err) {
+        console.error("Error uploading image:", err);
+        throw err; 
+    }
+  }
+
+
 
   async createIssueInDatabase(
     issue: IssueProps,
@@ -143,9 +243,8 @@ class IssueService {
   async createIssue(issueRequest: IssueRequest, userDetails: UserDetails) {
     try {
       const { context: requestContext, message }: IssueRequest = issueRequest;
-
+      console.log(JSON.stringify(issueRequest),"=========Issue Request====")
       const issue: IssueProps = message.issue;
-
       const contextFactory = new ContextFactory();
       const context = contextFactory.create({
         domain: requestContext?.domain,
@@ -158,6 +257,7 @@ class IssueService {
       });
 
       if (message?.issue?.rating || message?.issue?.issue_type) {
+        console.log("--------------INSIDE If---------------")
         const existingIssue: IssueProps = await getIssueByTransactionId(
           requestContext?.transaction_id
         );
@@ -196,34 +296,49 @@ class IssueService {
 
         return bppResponse;
       }
-      const imageUri: string[] = [];
+      // const imageUri: string[] = [];
 
       // const ImageBaseURL = getSignedUrlForUpload()
       // process.env.VOLUME_IMAGES_BASE_URL ||
       // "http://localhost:8989/issueApis/uploads/";
 
-      issue?.description?.images?.map(async (item: string) => {
-        const imageLink = await this.uploadImage(item);
-        imageUri.push(imageLink);
-      });
+      // issue?.description?.images?.map(async (item: string) => {
+      //   const imageLink = await this.uploadImage(item);
+      //   imageUri.push(imageLink);
+      // });
 
-      issue?.description?.images?.splice(
-        0,
-        issue?.description?.images.length,
-        ...imageUri
-      );
+      // issue?.description?.images?.splice(
+      //   0,
+      //   issue?.description?.images.length,
+      //   ...imageUri
+      // );
+
+      console.log(issue?.description,"--------issue?.description-------")
+
+      if (issue?.description?.images?.length) {
+          const uploadPromises = issue.description.images.map(async (item: string) => {
+              const imageLink = await this.uploadImage(item);
+              return imageLink; // Return the image link from the map
+          });
+        console.log("--------------uploadPromises---------------",uploadPromises)
+
+          const uploadedImageLinks = await Promise.all(uploadPromises);
+          // Replace original images with uploaded image links
+          issue.description.images = uploadedImageLinks; // Directly assign the uploaded links
+      }
 
       const issueRequests = await this.addComplainantAction(
         issue,
         requestContext.domain
       );
       issueRequests.issue_type = "ISSUE";
-
       const bppResponse: any = await bppIssueService.issue(
         context,
         issueRequests
       );
 
+      console.log("bppResponse ========= ", bppResponse);
+      
       if (bppResponse?.context) {
         await this.createIssueInDatabase(
           issueRequests,
@@ -239,6 +354,7 @@ class IssueService {
         process.env.SELECTED_ISSUE_CRM === TRUDESK
       ) {
         bugzillaService.createIssueInBugzilla(
+          requestContext?.domain,
           issueRequests,
           requestContext,
           issueRequests?.issue_actions
