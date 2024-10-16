@@ -88,11 +88,7 @@ async function getSignedUrlForUpload(data:any): Promise<any> {
   const signedUrlExpireSeconds = 60 * 60;
 
   let myBucket = bucket;
-
-  console.log(process.env.PROTOCOL_BASE_URL)
- console.log("s3------>",s3)
- console.log("bucket------>",bucket)
- console.log("data------>",data)
+  
  //TODO: Use Axios to send http request
  try {
      const myKey = data.path + '/' + uuidv4() + data.filetype.replace(/^\.?/, '.');
