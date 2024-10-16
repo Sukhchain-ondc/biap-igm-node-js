@@ -52,17 +52,13 @@ class IssueService {
       //   throw new Error("Invalid input string");
       // }
       const cleanedBase64 = base64.replace(/\s+/g, '');
-      
-      console.log("===================--------------------------",cleanedBase64,"======base64------------")
       const matches = cleanedBase64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
       if (!matches || matches.length !== 3) {
         throw new Error("Invalid input string");
       }
-      console.log(base64,"======base64------------")
       const b64toBlob = (b64Data: any, contentType = "", sliceSize = 512) => {
         const byteCharacters = atob(b64Data);
         const byteArrays = [];
-        console.log(b64toBlob,"======b64toBlob------------")
 
         for (
           let offset = 0;
@@ -105,7 +101,6 @@ class IssueService {
     try {
         // Remove any whitespace from the base64 string
         const cleanedBase64 = base64.replace(/\s+/g, '');
-        console.log("===================--------------------------", cleanedBase64, "======base64------------");
 
         // Match against the base64 data URL format
         const matches = cleanedBase64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
@@ -133,7 +128,6 @@ class IssueService {
             path: uuidv4(),
             filetype: contentType.split('/')[1], // Extract file type from content type
         });
-        console.log(resp,"===========resp========")
         // const uploadResponse = await fetch(resp?.urls, {
         //     method: "PUT",
         //     headers: { "Content-Type": contentType },
@@ -155,7 +149,6 @@ class IssueService {
   async uploadImage(base64: string) {
     try {
         const cleanedBase64 = base64.replace(/\s+/g, '');
-        console.log("===================--------------------------", cleanedBase64, "======base64------------");
 
         const matches = cleanedBase64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
         if (!matches || matches.length !== 3) {
@@ -166,13 +159,11 @@ class IssueService {
         const base64Data = matches[2];
 
         const buffer = Buffer.from(base64Data, 'base64');
-        console.log(buffer,"buffer")
         const directoryPath = '/app/images';
 
         const fileExtension = contentType.split('/')[1];
         const fileName = `${uuidv4()}.${fileExtension}`;
         const filePath = path.join(directoryPath, fileName);
-        console.log(filePath,"filePath")
 
         if (!fs.existsSync(directoryPath)) {
             fs.mkdirSync(directoryPath, { recursive: true });
@@ -243,7 +234,6 @@ class IssueService {
   async createIssue(issueRequest: IssueRequest, userDetails: UserDetails) {
     try {
       const { context: requestContext, message }: IssueRequest = issueRequest;
-      console.log(JSON.stringify(issueRequest),"=========Issue Request====")
       const issue: IssueProps = message.issue;
       const contextFactory = new ContextFactory();
       const context = contextFactory.create({
@@ -257,7 +247,6 @@ class IssueService {
       });
 
       if (message?.issue?.rating || message?.issue?.issue_type) {
-        console.log("--------------INSIDE If---------------")
         const existingIssue: IssueProps = await getIssueByTransactionId(
           requestContext?.transaction_id
         );
@@ -313,14 +302,12 @@ class IssueService {
       //   ...imageUri
       // );
 
-      console.log(issue?.description,"--------issue?.description-------")
 
       if (issue?.description?.images?.length) {
           const uploadPromises = issue.description.images.map(async (item: string) => {
               const imageLink = await this.uploadImage(item);
               return imageLink; // Return the image link from the map
           });
-        console.log("--------------uploadPromises---------------",uploadPromises)
 
           const uploadedImageLinks = await Promise.all(uploadPromises);
           // Replace original images with uploaded image links
@@ -337,7 +324,6 @@ class IssueService {
         issueRequests
       );
 
-      console.log("bppResponse ========= ", bppResponse);
       
       if (bppResponse?.context) {
         await this.createIssueInDatabase(
