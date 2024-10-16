@@ -29,9 +29,7 @@ class BugzillaService {
         network_order_id: issue?.order_details?.id || "",
         network_item_id: itemIds || ""
       };
-      console.log("process.env.BUGZILLA_SERVICE_URI --- ", process.env.BUGZILLA_SERVICE_URI);
-      console.log("payload ------------------ ", payload);
-
+      
       const apiCall = new HttpRequest(
         process.env.BUGZILLA_SERVICE_URI,
         "/create",
@@ -47,7 +45,6 @@ class BugzillaService {
       }
     } catch (error: any) {
       logger.info("Error in creating issue in Bugzilla ", error?.message || error);
-      console.log("Error in creating issue in Bugzilla ", error?.message || error);
       return error;
     }
   }
