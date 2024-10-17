@@ -60,6 +60,7 @@ class HttpRequest {
           params: this.data,
         });
       } else {
+        console.log("----this.url",this.url)
         // Make server request using axios
         result = await axios({
           baseURL: this.baseUrl,
@@ -77,7 +78,7 @@ class HttpRequest {
         logger.info("Error response =============", err?.response?.data);
       } else if (err.request) {
         // The client never received a response, and the request was never left
-        logger.info("Error request nishtha ===========", err.request);
+        logger.info("Error request testing ===========", err.request);
       } else {
         // Anything else
         logger.info("Error message", err.message);

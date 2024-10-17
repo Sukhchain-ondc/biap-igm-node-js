@@ -324,17 +324,17 @@ class IssueService {
         issueRequests
       );
 
-      
       if (bppResponse?.context) {
         await this.createIssueInDatabase(
           issueRequests,
-          userDetails?.decodedToken?.uid,
+          userDetails?.userId,
           bppResponse?.context?.message_id,
           bppResponse?.context?.transaction_id,
           requestContext?.domain
         );
         logger.info("Created issue in database");
       }
+      console.log(process.env.BUGZILLA_API_KEY,"===",process.env.SELECTED_ISSUE_CRM)
       if (
         process.env.BUGZILLA_API_KEY ||
         process.env.SELECTED_ISSUE_CRM === TRUDESK
@@ -357,13 +357,12 @@ class IssueService {
       let { limit = 10, pageNumber = 1 } = params;
 
       let skip = (pageNumber - 1) * limit;
-
-      const issues = await Issue.find({ userId: user.decodedToken.uid })
+      const issues = await Issue.find({ userId: user?.userId })
         .sort({ created_at: -1 })
         .limit(limit)
         .skip(skip);
       const totalCount = await Issue.countDocuments({
-        userId: user.decodedToken.uid,
+        userId: user?.userId,
       });
 
       return { issues, totalCount };

@@ -29,7 +29,7 @@ class BugzillaService {
         network_order_id: issue?.order_details?.id || "",
         network_item_id: itemIds || ""
       };
-      
+      console.log(process.env.BUGZILLA_SERVICE_URI,"====process.env.BUGZILLA_SERVICE_URI==")
       const apiCall = new HttpRequest(
         process.env.BUGZILLA_SERVICE_URI,
         "/create",
@@ -44,6 +44,7 @@ class BugzillaService {
         return result.data;
       }
     } catch (error: any) {
+      console.log("Error in creating issue in Bugzilla ", error?.message || error);
       logger.info("Error in creating issue in Bugzilla ", error?.message || error);
       return error;
     }
@@ -69,6 +70,7 @@ class BugzillaService {
         logger.info("Issue updated in Bugzilla");
       }
     } catch (error) {
+      console.log(error,"error===")
       logger.info("Error in updating issue in Bugzilla", error);
       return error;
     }

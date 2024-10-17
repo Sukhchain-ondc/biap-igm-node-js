@@ -211,6 +211,13 @@ export interface Quantity {
 
 export interface UserDetails {
   decodedToken: DecodedToken;
+  userId: string;         
+  email: string;          
+  mobile?: string;        
+  name?: string;          
+  createdAt: string;      
+  updatedAt: string;      
+  isGuest: boolean;       
   token: string;
 }
 
