@@ -12,7 +12,6 @@ class IssueController {
 
   createIssue(req: any, res: Response, next: NextFunction) {
     const { body: request, user: userDetails } = req;
-
     issueService
       .createIssue(request, userDetails)
       .then((response) => {

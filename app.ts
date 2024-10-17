@@ -24,7 +24,7 @@ const createServer = (): express.Application => {
   app.use("/issueApis", issue_statusRoutes);
   app.use("/issueApis", sseRoutes);
 
-  app.use(express.static("images"));
+  app.use("/images", express.static("images"));
   app.use("/issueApis/uploads", express.static("images"));
 
   // eslint-disable-next-line no-unused-vars

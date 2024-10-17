@@ -39,6 +39,7 @@ class IssueStatusService {
 
       const contextFactory = new ContextFactory();
       const context = contextFactory.create({
+        domain: requestContext?.domain,
         action: PROTOCOL_CONTEXT.ISSUE_STATUS,
         transactionId: requestContext?.transaction_id,
         bppId: requestContext?.bpp_id,
@@ -58,6 +59,7 @@ class IssueStatusService {
    */
   async onIssueStatus(messageId: Object) {
     try {
+	console.log("messageId",messageId)
       const protocolSupportResponse = await onIssue_status(messageId);
       if (protocolSupportResponse && protocolSupportResponse.length) {
         const respondent_actions =
@@ -67,6 +69,8 @@ class IssueStatusService {
         const issue: IssueProps = await getIssueByTransactionId(
           protocolSupportResponse?.[0]?.context?.transaction_id
         );
+
+        const complainant_action = issue.issue_actions.complainant_actions;
         respondent_actions?.map((item: RespondentActions) => {
           if (item?.respondent_action === "RESOLVED") {
             bugzillaService.updateIssueInBugzilla(
@@ -77,17 +81,14 @@ class IssueStatusService {
           }
         });
 
-        issue?.issue_actions?.respondent_actions?.splice(
-          0,
-          issue?.issue_actions?.respondent_actions.length,
-          ...respondent_actions
-        );
+        issue.issue_actions.respondent_actions = respondent_actions;
 
         issue["resolution_provider"] =
           protocolSupportResponse?.[0]?.message?.issue?.resolution_provider;
         issue["resolution"] =
           protocolSupportResponse?.[0]?.message?.issue?.resolution;
 
+        issue.issue_actions.complainant_actions = complainant_action;
         await addOrUpdateIssueWithtransactionId(
           protocolSupportResponse?.[0]?.context?.transaction_id,
           issue

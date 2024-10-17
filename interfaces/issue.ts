@@ -4,6 +4,7 @@ export interface IssueRequest {
 }
 
 export interface Context {
+  domain:string;
   bpp_id: any;
   bpp_uri: any;
   transaction_id: string;
@@ -210,6 +211,13 @@ export interface Quantity {
 
 export interface UserDetails {
   decodedToken: DecodedToken;
+  userId: string;         
+  email: string;          
+  mobile?: string;        
+  name?: string;          
+  createdAt: string;      
+  updatedAt: string;      
+  isGuest: boolean;       
   token: string;
 }
 

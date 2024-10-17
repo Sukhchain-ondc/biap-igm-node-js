@@ -14,6 +14,7 @@ COPY tsconfig.json ./
 # ENV BUGZILLA_API_KEY: ${BUGZILLA_API_KEY}
 # ENV BAP_URL: ${BAP_URL}
 COPY . .
+RUN npm install -g npm@10.5.2
 RUN npm install --development
 RUN npm run build
 CMD [ "node", "dist/index.js" ]

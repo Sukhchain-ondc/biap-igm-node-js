@@ -6,7 +6,7 @@ import IssueModel from "../database/issue.model";
  */
 const addOrUpdateIssueWithtransactionId = async (
   transactionId: string | any,
-  issueSchema: object = {}
+  issueSchema: Record <any,any> = {}
 ) => {
   return await IssueModel.findOneAndUpdate(
     {
@@ -14,6 +14,7 @@ const addOrUpdateIssueWithtransactionId = async (
     },
     {
       ...issueSchema,
+
     },
     { upsert: true }
   );

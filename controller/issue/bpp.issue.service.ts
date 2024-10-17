@@ -56,16 +56,16 @@ class BppIssueService {
               type: "CONSUMER",
             },
             expected_response_time: {
-              duration: process.env.EXPECTED_RESPONSE_TIME,
+              duration: process.env.EXPECTED_RESPONSE_TIME || "PT1H",
             },
             expected_resolution_time: {
-              duration: process.env.EXPECTED_RESOLUTION_TIME,
+              duration: process.env.EXPECTED_RESOLUTION_TIME || "P1D",
             },
             status: issue?.status || "OPEN",
             issue_type: PROTOCOL_CONTEXT?.ISSUE.toUpperCase(),
             issue_actions: issue_actions,
             created_at: issue?.created_at,
-            updated_at: issue?.updated_at,
+            updated_at: new Date(),
           },
         },
       };

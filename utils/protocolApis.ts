@@ -61,8 +61,9 @@ const protocolIssueStatus = async (data: any) => {
 const onIssueStatus = async (messageId: string) => {
   const apiCall = new HttpRequest(
     process.env.PROTOCOL_BASE_URL,
-    PROTOCOL_API_URLS.ON_ISSUE_STATUS + "?messageId=" + messageId,
-    "get"
+    PROTOCOL_API_URLS.RESPONSE,
+    "get",
+    { requestType: "on_issue_status", messageId }
   );
 
   const result = await apiCall.send();
@@ -76,8 +77,9 @@ const onIssueStatus = async (messageId: string) => {
 const onIssueOrder = async (messageId: string) => {
   const apiCall = new HttpRequest(
     process.env.PROTOCOL_BASE_URL,
-    PROTOCOL_API_URLS.ON_ISSUE + "?messageId=" + messageId,
-    "get"
+    PROTOCOL_API_URLS.RESPONSE,
+    "get",
+    { requestType: "on_issue", messageId }
   );
 
   const result = await apiCall.send();
@@ -91,8 +93,9 @@ const onIssueOrder = async (messageId: string) => {
 const onIssue_status = async (messageId: any) => {
   const apiCall = new HttpRequest(
     process.env.PROTOCOL_BASE_URL,
-    PROTOCOL_API_URLS.ON_ISSUE_STATUS + "?messageId=" + messageId,
-    "get"
+    PROTOCOL_API_URLS.RESPONSE,
+    "get",
+    { requestType: "on_issue_status", messageId }
   );
 
   const result = await apiCall.send();
