@@ -171,10 +171,10 @@ class IssueService {
 
         fs.writeFileSync(filePath, buffer);
 
-        const publicUrl = `/images/${fileName}`;
-        console.log("Image saved at:", publicUrl);
+        const publicUrl = `images/${fileName}`;
+        console.log("Image saved at:", `${process.env.REACT_APP_BASE_URL}${publicUrl}`);
 
-        return publicUrl;
+        return `${process.env.REACT_APP_BASE_URL}${publicUrl}`;
     } catch (err) {
         console.error("Error uploading image:", err);
         throw err; 
